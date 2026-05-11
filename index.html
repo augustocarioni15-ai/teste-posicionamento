@@ -561,6 +561,9 @@
 // Deixe "" para não redirecionar.
 const REDIRECT_URL = "";
 
+// URL do Google Apps Script para salvar respostas na planilha.
+const SHEETS_URL = "https://script.google.com/macros/s/AKfycbwfKPh3oM5_rDZO_YDHOndaAYyBNN3qbNwyMSI8jc8McFDnxvGnhSL9b9Q8TGIyBQw6/exec";
+
 // Tempo (ms) antes de redirecionar automaticamente (padrão: 4 segundos)
 const REDIRECT_DELAY = 4000;
 
@@ -661,6 +664,39 @@ function buildFinalQuestion() {
 function submitFinal() {
   const val = document.getElementById('field-final').value.trim();
   if (!val) { showError('err-final'); return; }
+
+  const scorable = [2,3,4,5,6,7,8,9,10,11];
+  const count = { A:0, B:0, C:0 };
+  scorable.forEach(i => { if (answers[i]) count[answers[i]]++; });
+  const winner = Object.keys(count).reduce((a,b) => count[a] >= count[b] ? a : b);
+  const pilares = { A: 'PRESENÇA', B: 'PERCEPÇÃO', C: 'PREFERÊNCIA' };
+
+  const payload = {
+    nome:      userName,
+    q2:        answers[2]  || '',
+    q3:        answers[3]  || '',
+    q4:        answers[4]  || '',
+    q5:        answers[5]  || '',
+    q6:        answers[6]  || '',
+    q7:        answers[7]  || '',
+    q8:        answers[8]  || '',
+    q9:        answers[9]  || '',
+    q10:       answers[10] || '',
+    q11:       answers[11] || '',
+    resultado: pilares[winner],
+    reacao:    answers[12] === 'A' ? 'Fez todo o sentido!' : 'Preciso de ajuda neste próximo passo...',
+    negocio:   val
+  };
+
+  if (SHEETS_URL) {
+    fetch(SHEETS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  }
+
   buildThankyou();
   goTo(14);
   if (REDIRECT_URL) scheduleRedirect();
