@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teste de Posicionamento</title>
+  <style>
+    /* ── CONFIG: altere a URL de redirecionamento aqui ── */
+    /* Veja a variável REDIRECT_URL no bloco <script> abaixo */
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue: #2563EB;
+      --blue-hover: #1D4ED8;
+      --blue-light: #EFF6FF;
+      --blue-border: #BFDBFE;
+      --text: #1E293B;
+      --muted: #64748B;
+      --radius: 8px;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #fff;
+      color: var(--text);
+    }
+
+    /* ── Progress bar ── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 4px;
+      background: var(--blue);
+      transition: width 0.4s ease;
+      z-index: 100;
+    }
+
+    /* ── Navigation arrows ── */
+    #nav-arrows {
+      position: fixed;
+      right: 24px;
+      bottom: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 100;
+    }
+    .nav-arrow {
+      width: 36px; height: 36px;
+      background: #fff;
+      border: 1px solid #E2E8F0;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 14px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .nav-arrow:hover { background: var(--blue); color: #fff; }
+
+    /* ── Slide container ── */
+    #app {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .slide {
+      display: none;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 24px 60px;
+      animation: fadeIn 0.35s ease;
+    }
+    .slide.active { display: flex; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide-inner { max-width: 680px; width: 100%; }
+
+    /* ── Typography ── */
+    h1 { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 700; line-height: 1.2; margin-bottom: 20px; }
+    h2 { font-size: clamp(1.2rem, 3vw, 1.7rem); font-weight: 600; line-height: 1.3; margin-bottom: 24px; }
+    p  { font-size: 1rem; line-height: 1.65; color: var(--muted); margin-bottom: 12px; }
+    .label { font-size: 0.85rem; color: var(--muted); margin-bottom: 8px; }
+
+    /* ── Welcome screen ── */
+    .welcome-text { font-size: 1rem; line-height: 1.7; color: var(--text); margin-bottom: 8px; }
+    .welcome-legend {
+      display: inline-flex; gap: 12px; flex-wrap: wrap;
+      margin: 12px 0 20px;
+    }
+    .legend-badge {
+      background: var(--blue-light);
+      border: 1px solid var(--blue-border);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.85rem;
+      color: var(--blue);
+      font-weight: 500;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn:hover { background: var(--blue-hover); }
+    .btn:active { transform: scale(0.98); }
+    .btn-icon { font-size: 1.1rem; }
+
+    /* ── Text input ── */
+    .text-field {
+      width: 100%;
+      border: none;
+      border-bottom: 2px solid var(--blue-border);
+      outline: none;
+      font-size: 1rem;
+      padding: 10px 4px;
+      margin-bottom: 24px;
+      color: var(--text);
+      transition: border-color 0.2s;
+      background: transparent;
+    }
+    .text-field::placeholder { color: #94A3B8; }
+    .text-field:focus { border-bottom-color: var(--blue); }
+
+    /* ── Choice options ── */
+    .choices { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+
+    .choice {
+      display: flex; align-items: center; gap: 14px;
+      border: 1.5px solid var(--blue-border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      user-select: none;
+    }
+    .choice:hover { background: var(--blue-light); border-color: var(--blue); }
+    .choice.selected { background: var(--blue-light); border-color: var(--blue); }
+
+    .choice-letter {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 1.5px solid var(--blue-border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 700;
+      color: var(--blue);
+      flex-shrink: 0;
+    }
+    .choice.selected .choice-letter {
+      background: var(--blue); color: #fff; border-color: var(--blue);
+    }
+    .choice-text { font-size: 0.95rem; color: var(--text); }
+
+    /* ── Result card ── */
+    .result-card {
+      background: var(--blue-light);
+      border: 1.5px solid var(--blue-border);
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 28px;
+    }
+    .result-label { font-size: 0.8rem; font-weight: 700; color: var(--blue); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 8px; }
+    .result-title { font-size: 1.4rem; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+    .result-meaning { font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+    .result-desc { font-size: 0.95rem; color: var(--muted); line-height: 1.6; }
+
+    /* ── Thank you ── */
+    .thankyou-icon { font-size: 3rem; margin-bottom: 20px; opacity: 0.4; }
+    .thankyou-text { font-size: 1.15rem; color: var(--muted); line-height: 1.7; text-align: center; }
+    .thankyou-text strong { color: var(--text); }
+
+    .redirect-hint {
+      margin-top: 32px;
+      font-size: 0.85rem;
+      color: #94A3B8;
+      text-align: center;
+    }
+    .redirect-hint a { color: var(--blue); text-decoration: none; font-weight: 600; }
+
+    /* ── Error message ── */
+    .field-error { color: #DC2626; font-size: 0.85rem; margin-top: -18px; margin-bottom: 16px; display: none; }
+    .field-error.visible { display: block; }
+
+    /* ── Textarea (last question) ── */
+    .text-area {
+      width: 100%;
+      border: none;
+      border-bottom: 2px solid var(--blue-border);
+      outline: none;
+      font-size: 1rem;
+      padding: 10px 4px;
+      margin-bottom: 24px;
+      color: var(--text);
+      background: transparent;
+      resize: none;
+      min-height: 80px;
+      font-family: inherit;
+      line-height: 1.6;
+      transition: border-color 0.2s;
+    }
+    .text-area::placeholder { color: #94A3B8; }
+    .text-area:focus { border-bottom-color: var(--blue); }
+
+    /* ── Slide: center vertically ── */
+    .slide-inner.center { text-align: center; }
+  </style>
+</head>
+<body>
+
+<div id="progress-bar" style="width:0%"></div>
+
+<div id="nav-arrows">
+  <button class="nav-arrow" onclick="goBack()" title="Voltar">↑</button>
+  <button class="nav-arrow" onclick="goNext()" title="Avançar">↓</button>
+</div>
+
+<div id="app">
+
+  <!-- ══════════════ TELA 0 — Boas-vindas ══════════════ -->
+  <div class="slide active" id="slide-0">
+    <div class="slide-inner">
+      <h1>Bem-vindo(a) ao Teste de Posicionamento!</h1>
+      <p class="welcome-text">
+        Você sabe em qual nível está hoje (presença, percepção ou preferência)?
+        Responda com sinceridade. Não é o que você gostaria, é o que acontece na prática.
+      </p>
+      <p class="welcome-text" style="margin-top:12px;">
+        Para cada pergunta, escolha a alternativa que mais representa sua realidade:
+      </p>
+      <div class="welcome-legend">
+        <span class="legend-badge">A = Presença</span>
+        <span class="legend-badge">B = Percepção</span>
+        <span class="legend-badge">C = Preferência</span>
+      </div>
+      <p class="welcome-text">
+        Ao final, você receberá um <strong>diagnóstico estratégico</strong> sobre o seu
+        posicionamento hoje. Vamos começar?
+      </p>
+      <br />
+      <button class="btn" onclick="goTo(1)">Começar <span class="btn-icon">→</span></button>
+    </div>
+  </div>
+
+  <!-- ══════════════ TELA 1 — Nome ══════════════ -->
+  <div class="slide" id="slide-1">
+    <div class="slide-inner">
+      <h2>Antes de tudo, me conta aqui como eu posso te chamar?</h2>
+      <p class="label">Escreva seu nome abaixo.</p>
+      <input type="text" class="text-field" id="field-name" placeholder="Sua resposta..." autocomplete="off" />
+      <div class="field-error" id="err-name">Por favor, escreva seu nome para continuar.</div>
+      <button class="btn" onclick="submitName()">Avançar</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ TELA 2 — Q1 ══════════════ -->
+  <div class="slide" id="slide-2">
+    <div class="slide-inner">
+      <h2>Quando alguém chega no seu perfil...</h2>
+      <div class="choices" id="choices-2">
+        <div class="choice" data-val="A" onclick="selectChoice(2,'A')">
+          <span class="choice-letter">A</span>
+          <span class="choice-text">Só vê que você existe</span>
+        </div>
+        <div class="choice" data-val="B" onclick="selectChoice(2,'B')">
+          <span class="choice-letter">B</span>
+          <span class="choice-text">Entende mais ou menos o que você faz</span>
+        </div>
+        <div class="choice" data-val="C" onclick="selectChoice(2,'C')">
+          <span class="choice-letter">C</span>
+          <span class="choice-text">Entende claramente e se interessa</span>
+        </div>
+      </div>
+      <div class="field-error" id="err-2">Selecione uma opção para continuar.</div>
+      <button class="btn" onclick="submitChoice(2)">Avançar</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ TELA 3 — Q2 ══════════════ -->
+  <div class="slide" id="slide-3">
+    <div class="slide-inner">
+      <h2>Quando te perguntam "o que você faz?"</h2>
+      <div class="choices" id="choices-3">
+        <div class="choice" data-val="A" onclick="selectChoice(3,'A')">
+          <span class="choice-letter">A</span>
+          <span class="choice-text">Você enrola ou fala genérico</span>
+        </div>
+        <div class="choice" data-val="B" onclick="selectChoice(3,'B')">
+          <span class="choice-letter">B</span>
+          <span class="choice-text">Explica, mas precisa de tempo</span>
+        </div>
+        <div class="choice" data-val="C" onclick="selectChoice(3,'C')">
+          <span class="choice-letter">C</span>
+          <span class="choice-text">Responde em uma frase clara e forte</span>
+        </div>
+      </div>
+      <div class="field-error" id="err-3">Selecione uma opção para continuar.</div>
+      <button class="btn" onclick="submitChoice(3)">Avançar</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ TELA 4 — Q3 ══════════════ -->
+  <div class="slide" id="slide-4">
+    <div class="slide-inner">
+      <h2>Seus conteúdos hoje...</h2>
+      <div class="choices" id="choices-4">
+        <div class="choice" data-val="A" onclick="selectChoice(4,'A')">
+          <span class="choice-letter">A</span>
+          <span class="choice-text">Não geram retorno</span>
+        </div>
+        <div class="choice" data-val="B" onclick="selectChoice(4,'B')">
+          <span class="choice-letter">B</span>
+          <span class="choice-text">Geram interesse e engajamento</span>
+        </div>
+        <div class="choice" data-val="C" onclick="selectChoice(4,'C')">
+          <span class="choice-letter">C</span>
+          <span class="choice-text">Geram conversas e oportunidades</span>
+        </div>
+      </div>
+      <div class="field-error" id="err-4">Selecione uma opção para continuar.</div>
+      <button class="btn" onclick="submitChoice(4)">Avançar</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ TELA 5 — Q4 ══════════════ -->
+  <div class="slide" id="slide-5">
+    <div class="slide-inner">
+      <h2>Seus seguidores...</h2>
+      <div class="choices" id="choices-5">
+        <div class="choice" data-val="A" onclick="selectChoice(5,'A')">
+          <span class="choice-letter">A</span>
+          <span class="choice-text">Não interagem muito</span>
+        </div>
+        <div class="choice" data-val="B" onclick="selectChoice(5,'B')">
+          <span class="choice-letter">B</span>
+          <span class="choice-text">Interagem, mas não compram</span>
+        </div>
+        <div class="choice" data-val="C" onclick="selectChoice(5,'C')">
+          <span class="choice-letter">C</span>
+          <span class="choice-text">Perguntam como contratar</span>
+        </div>
+      </div>
+      <div class="field-error" id="err-5">Selecione uma opção para continuar.</div>
+      <button class="btn" onclick="submitChoice(5)">Avançar</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ TELA 6 — Q5 ══════════════ -->
+  <div class="slide" id="slide-6">
+    <div class="slide-inner">
+      <h2>Suas vendas acontecem...</h2>
+      <div class="choices" id="choices-6">
+        <div class="choice" data-val="A" onclick="selectChoice(6,'A')">
+          <span class="choice-letter">A</span>
+          <span class="choice-text">Raramente</span>
+        </div>
+        <div class="choice" data-val="B" onclick="selectChoice(6,'B')">
+          <span class="choice-letter">B</span>
+          <span class="choice-text">Com esforço e explicação</span>
+        </div>
+        <div class="choice" data-val="C" onclick="selectChoice(6,'C')">
+          <span class="choice-letter">C</span>
+          <span class="choice-text">Com naturalidade e recorrência</span>
+        </div>
+      </div>
+      <div class="field-error" id="err-6">Selecione uma opção para continuar.</div>
+      <button class="btn" onclick="submitChoice(6)">Avançar</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ TELA 7 — Q6 ══════════════ -->
+  <div class="slide" id="slide-7">
+    <div class="slide-inner">
+      <h2>Seu diferencial está...</h2>
+      <div class="choices" id="choices-7">
+        <div class="choice" data-val="A" onclick="selectChoice(7,'A')">
+          <span class="choice-letter">A</span>
+          <span class="choice-text">Confuso até para você</span>
+        </div>
+        <div class="choice" data-val="B" onclick="selectChoice(7,'B')">
+          <span class="choice-letter">B</span>
+          <span class="choice-text">Existe, mas não está claro para o público</span>
+        </div>
+        <div class="choice" data-val="C" onclick="selectChoice(7,'C')">
+          <span class="choice-letter">C</span>
+          <span class="choice-text">Claro e percebido pelo mercado</span>
+        </div>
+      </div>
+      <div class="field-error" id="err-7">Selecione uma opção para continuar.</div>
+      <button class="btn" onclick="submitChoice(7)">Avançar</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ TELA 8 — Q7 ══════════════ -->
+  <div class="slide" id="slide-8">
+    <div class="slide-inner">
+      <h2>Você sente que...</h2>
+      <p style="margin-bottom:20px;">
+        Escolha a alternativa que mais representa sua realidade: opção A = Presença;
+        opção B = Percepção e opção C = Preferência.
+      </p>
+      <div class="choices" id="choices-8">
+        <div class="choice" data-val="A" onclick="selectChoice(8,'A')">
+          <span class="choice-letter">A</span>
+          <span class="choice-text">Está tentando encontrar seu caminho</span>
+        </div>
+        <div class="choice" data-val="B" onclick="selectChoice(8,'B')">
+          <span class="choice-letter">B</span>
+          <span class="choice-text">Está no caminho, mas algo não encaixa</span>
+        </div>
+        <div class="choice" data-val="C" onclick="selectChoice(8,'C')">
+          <span class="choice-letter">C</span>
+          <span class="choice-text">Está construindo algo sólido</span>
+        </div>
+      </div>
+      <div class="field-error" id="err-8">Selecione uma opção para continuar.</div>
+      <button class="btn" onclick="submitChoice(8)">Avançar</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ TELA 9 — Q8 ══════════════ -->
+  <div class="slide" id="slide-9">
+    <div class="slide-inner">
+      <h2>Quando você se apresenta ao vivo...</h2>
+      <div class="choices" id="choices-9">
+        <div class="choice" data-val="A" onclick="selectChoice(9,'A')">
+          <span class="choice-letter">A</span>
+          <span class="choice-text">Fica inseguro</span>
+        </div>
+        <div class="choice" data-val="B" onclick="selectChoice(9,'B')">
+          <span class="choice-letter">B</span>
+          <span class="choice-text">Explica bem, mas sem impacto</span>
+        </div>
+        <div class="choice" data-val="C" onclick="selectChoice(9,'C')">
+          <span class="choice-letter">C</span>
+          <span class="choice-text">Gera interesse imediato</span>
+        </div>
+      </div>
+      <div class="field-error" id="err-9">Selecione uma opção para continuar.</div>
+      <button class="btn" onclick="submitChoice(9)">Avançar</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ TELA 10 — Q9 ══════════════ -->
+  <div class="slide" id="slide-10">
+    <div class="slide-inner">
+      <h2>Seu preço hoje...</h2>
+      <div class="choices" id="choices-10">
+        <div class="choice" data-val="A" onclick="selectChoice(10,'A')">
+          <span class="choice-letter">A</span>
+          <span class="choice-text">Precisa ser justificado</span>
+        </div>
+        <div class="choice" data-val="B" onclick="selectChoice(10,'B')">
+          <span class="choice-letter">B</span>
+          <span class="choice-text">Às vezes gera objeção</span>
+        </div>
+        <div class="choice" data-val="C" onclick="selectChoice(10,'C')">
+          <span class="choice-letter">C</span>
+          <span class="choice-text">É aceito com mais facilidade</span>
+        </div>
+      </div>
+      <div class="field-error" id="err-10">Selecione uma opção para continuar.</div>
+      <button class="btn" onclick="submitChoice(10)">Avançar</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ TELA 11 — Q10 ══════════════ -->
+  <div class="slide" id="slide-11">
+    <div class="slide-inner">
+      <h2>O mercado te vê como...</h2>
+      <div class="choices" id="choices-11">
+        <div class="choice" data-val="A" onclick="selectChoice(11,'A')">
+          <span class="choice-letter">A</span>
+          <span class="choice-text">Mais um</span>
+        </div>
+        <div class="choice" data-val="B" onclick="selectChoice(11,'B')">
+          <span class="choice-letter">B</span>
+          <span class="choice-text">Alguém interessante</span>
+        </div>
+        <div class="choice" data-val="C" onclick="selectChoice(11,'C')">
+          <span class="choice-letter">C</span>
+          <span class="choice-text">Uma escolha clara</span>
+        </div>
+      </div>
+      <div class="field-error" id="err-11">Selecione uma opção para continuar.</div>
+      <button class="btn" onclick="submitChoice(11)">Avançar</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ TELA 12 — Resultado ══════════════ -->
+  <div class="slide" id="slide-12">
+    <div class="slide-inner">
+      <div class="result-card">
+        <div class="result-label">Seu diagnóstico</div>
+        <div class="result-title" id="result-title"></div>
+        <div class="result-meaning">O que significa?</div>
+        <div class="result-desc" id="result-desc"></div>
+      </div>
+      <div class="choices" id="choices-12">
+        <div class="choice" data-val="A" onclick="selectChoice(12,'A')">
+          <span class="choice-letter">A</span>
+          <span class="choice-text">Fez todo o sentido!</span>
+        </div>
+        <div class="choice" data-val="B" onclick="selectChoice(12,'B')">
+          <span class="choice-letter">B</span>
+          <span class="choice-text">Preciso de ajuda neste próximo passo...</span>
+        </div>
+      </div>
+      <div class="field-error" id="err-12">Selecione uma opção para continuar.</div>
+      <button class="btn" onclick="submitChoice(12)">Avançar</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ TELA 13 — Última pergunta (texto) ══════════════ -->
+  <div class="slide" id="slide-13">
+    <div class="slide-inner">
+      <h2 id="final-question-title"></h2>
+      <textarea class="text-area" id="field-final" placeholder="Sua resposta..."></textarea>
+      <div class="field-error" id="err-final">Por favor, escreva sua resposta para continuar.</div>
+      <button class="btn" onclick="submitFinal()">✓ Enviar respostas</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ TELA 14 — Obrigado ══════════════ -->
+  <div class="slide" id="slide-14">
+    <div class="slide-inner center">
+      <div class="thankyou-icon">✈</div>
+      <p class="thankyou-text" id="thankyou-msg"></p>
+      <div class="redirect-hint" id="redirect-hint" style="display:none;">
+        Caso não seja redirecionado automaticamente,
+        <a href="#" id="redirect-link">clique aqui</a>.
+      </div>
+    </div>
+  </div>
+
+</div><!-- /#app -->
+
+<script>
+/* ════════════════════════════════════════════════
+   ★  CONFIGURAÇÕES  ★
+   Altere as variáveis abaixo conforme necessário.
+═════════════════════════════════════════════════ */
+
+// URL de redirecionamento após o envio do formulário.
+// Deixe "" para não redirecionar.
+const REDIRECT_URL = "";
+
+// Tempo (ms) antes de redirecionar automaticamente (padrão: 4 segundos)
+const REDIRECT_DELAY = 4000;
+
+/* ════════════════════════════════════════════════
+   Lógica do formulário — não precisa alterar
+═════════════════════════════════════════════════ */
+
+const TOTAL_SLIDES = 15; // 0..14
+let currentSlide = 0;
+let userName = "";
+const answers = {}; // slideIndex -> "A"|"B"|"C"
+
+// Resultados por pilar
+const RESULTS = {
+  A: {
+    title: "Seu posicionamento está atualmente sobre o pilar da PRESENÇA!",
+    desc:  "Você aparece, mas ainda não é entendido. Você ainda não decidiu com clareza seu posicionamento e o próximo passo é definir o que você faz + para quem + qual transformação!"
+  },
+  B: {
+    title: "Seu posicionamento está atualmente sobre o pilar da PERCEPÇÃO!",
+    desc:  "Você já é percebido pelo mercado, mas ainda não gera a preferência que merece. Seu próximo passo é aprofundar sua autoridade, criar mais consistência na comunicação e fortalecer sua proposta de valor."
+  },
+  C: {
+    title: "Seu posicionamento está atualmente sobre o pilar da PREFERÊNCIA!",
+    desc:  "Parabéns! Você é a escolha clara para o seu público. As pessoas te reconhecem, confiam em você e buscam ativamente o seu trabalho. Continue refinando sua autoridade e escalando sua presença."
+  }
+};
+
+function goTo(index) {
+  if (index < 0 || index >= TOTAL_SLIDES) return;
+  document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+  document.getElementById('slide-' + index).classList.add('active');
+  currentSlide = index;
+  updateProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goBack() {
+  if (currentSlide > 0) goTo(currentSlide - 1);
+}
+
+function goNext() {
+  if (currentSlide < TOTAL_SLIDES - 1) goTo(currentSlide + 1);
+}
+
+function updateProgress() {
+  const pct = (currentSlide / (TOTAL_SLIDES - 1)) * 100;
+  document.getElementById('progress-bar').style.width = pct + '%';
+}
+
+function selectChoice(slideIdx, val) {
+  answers[slideIdx] = val;
+  const container = document.getElementById('choices-' + slideIdx);
+  container.querySelectorAll('.choice').forEach(c => {
+    c.classList.toggle('selected', c.dataset.val === val);
+  });
+  hideError('err-' + slideIdx);
+}
+
+function showError(id) {
+  document.getElementById(id).classList.add('visible');
+}
+function hideError(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('visible');
+}
+
+function submitName() {
+  const val = document.getElementById('field-name').value.trim();
+  if (!val) { showError('err-name'); return; }
+  userName = val;
+  goTo(2);
+}
+
+function submitChoice(slideIdx) {
+  if (!answers[slideIdx]) { showError('err-' + slideIdx); return; }
+  const next = slideIdx + 1;
+  if (next === 12) buildResult();
+  if (next === 13) buildFinalQuestion();
+  goTo(next);
+}
+
+function buildResult() {
+  const scorable = [2,3,4,5,6,7,8,9,10,11];
+  const count = { A:0, B:0, C:0 };
+  scorable.forEach(i => { if (answers[i]) count[answers[i]]++; });
+  const winner = Object.keys(count).reduce((a,b) => count[a] >= count[b] ? a : b);
+  const r = RESULTS[winner];
+  document.getElementById('result-title').textContent = r.title;
+  document.getElementById('result-desc').textContent  = r.desc;
+}
+
+function buildFinalQuestion() {
+  document.getElementById('final-question-title').textContent =
+    userName + ', agora que você já sabe o seu posicionamento atual, me conta um pouco mais sobre o seu negócio e o que você gostaria de construir nos próximos 2 anos:';
+}
+
+function submitFinal() {
+  const val = document.getElementById('field-final').value.trim();
+  if (!val) { showError('err-final'); return; }
+  buildThankyou();
+  goTo(14);
+  if (REDIRECT_URL) scheduleRedirect();
+}
+
+function buildThankyou() {
+  document.getElementById('thankyou-msg').innerHTML =
+    '<strong>Obrigado por participar, ' + escapeHtml(userName) + '!</strong><br/>' +
+    'Em breve entraremos em contato com você para dar sequência a essa conversa!';
+
+  if (REDIRECT_URL) {
+    const hint = document.getElementById('redirect-hint');
+    hint.style.display = 'block';
+    document.getElementById('redirect-link').href = REDIRECT_URL;
+  }
+}
+
+function scheduleRedirect() {
+  setTimeout(() => { window.location.href = REDIRECT_URL; }, REDIRECT_DELAY);
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Enter key on text input
+document.getElementById('field-name').addEventListener('keydown', e => {
+  if (e.key === 'Enter') submitName();
+});
+</script>
+</body>
+</html>
