@@ -699,7 +699,7 @@ function submitFinal() {
 
   buildThankyou();
   goTo(14);
-  if (REDIRECT_URL) scheduleRedirect();
+  if (REDIRECT_URL) window.open(REDIRECT_URL, '_blank');
 }
 
 function buildThankyou() {
